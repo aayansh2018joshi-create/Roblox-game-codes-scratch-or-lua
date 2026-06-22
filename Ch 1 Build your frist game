@@ -1,0 +1,199 @@
+# 🏭 My First Roblox Tycoon — Built From Scratch!
+
+Hey Aayansh! This is your complete Tycoon. I wrote all the code for you. 💪
+You just need to make a few parts and paste my scripts in. Follow the steps and
+you'll have a real, working money-making Tycoon!
+
+Take your time. There is no rush, and if something doesn't work, just read the
+step again carefully. You've got this. 😄
+
+---
+
+## 🧩 What we're building
+
+A simple Tycoon money loop:
+
+1. A **Dropper** makes little blocks (worth cash) every 2 seconds
+2. The blocks fall onto a **Collector**
+3. The Collector turns them into **Cash** in your leaderboard
+4. A **Buy Button** lets you spend 50 cash to make your Dropper go *twice as fast*!
+
+That's a real Tycoon. 🎉
+
+---
+
+## 🛠️ PART 1: Make the parts
+
+Open Roblox Studio with a **Baseplate** (empty world). On the right side is the
+**Explorer** panel. We'll add 3 blocks.
+
+### Block 1 — The Dropper
+1. Click the **Part** button at the top to add a block
+2. Move it up HIGH in the air (use the Move tool, the arrows)
+3. In the Explorer, click the part once, then click its name and rename it to: **Dropper**
+4. (Optional) Make it a fun color in the Properties panel!
+
+### Block 2 — The Collector
+1. Add another **Part**
+2. Make it WIDE and FLAT (stretch it with the Scale tool)
+3. Put it right **underneath** the Dropper, like a table to catch the falling blocks
+4. Rename it to: **Collector**
+5. In Properties, turn ON **Anchored** (so it doesn't fall)
+
+### Block 3 — The Buy Button
+1. Add another **Part**
+2. Make it small and flat, like a floor tile
+3. Put it on the ground where your player can walk onto it
+4. Rename it to: **BuyButton**
+5. In Properties, turn ON **Anchored**
+6. Make it a bright color (like green) so it's easy to find!
+
+✅ Also: click your **Dropper** and turn ON **Anchored** too, so it floats in the air.
+
+---
+
+## 💻 PART 2: Add the scripts
+
+Now the magic part — the code! For each script below, follow where I tell you to
+put it. To add a script: hover over the right spot in Explorer, click the **+**,
+and choose **Script**. Delete anything already inside it, then paste my code.
+
+---
+
+### Script 1 — The Money System
+**Where to put it:** inside **ServerScriptService** (find it in Explorer)
+
+```lua
+-- Gives every player a "Cash" counter on the leaderboard
+game.Players.PlayerAdded:Connect(function(player)
+	local leaderstats = Instance.new("Folder")
+	leaderstats.Name = "leaderstats"
+	leaderstats.Parent = player
+
+	local cash = Instance.new("IntValue")
+	cash.Name = "Cash"
+	cash.Value = 0
+	cash.Parent = leaderstats
+end)
+```
+
+---
+
+### Script 2 — The Dropper
+**Where to put it:** inside your **Dropper** part
+(Hover over the Dropper part in Explorer → click **+** → add a Script inside it)
+
+```lua
+local dropper = script.Parent
+
+-- How many seconds between each drop (the Buy Button can lower this!)
+dropper:SetAttribute("DropSpeed", 2)
+
+while true do
+	task.wait(dropper:GetAttribute("DropSpeed"))
+
+	-- Make a little block
+	local drop = Instance.new("Part")
+	drop.Name = "Drop"
+	drop.Size = Vector3.new(1, 1, 1)
+	drop.Color = Color3.fromRGB(85, 255, 127)
+	drop.Position = dropper.Position - Vector3.new(0, 2, 0)
+	drop.Parent = workspace
+
+	-- This block is worth 5 cash
+	local cashValue = Instance.new("IntValue")
+	cashValue.Name = "CashValue"
+	cashValue.Value = 5
+	cashValue.Parent = drop
+
+	-- If nobody collects it in 20 seconds, remove it (keeps the game clean)
+	game:GetService("Debris"):AddItem(drop, 20)
+end
+```
+
+---
+
+### Script 3 — The Collector
+**Where to put it:** inside your **Collector** part
+
+```lua
+local collector = script.Parent
+
+collector.Touched:Connect(function(hit)
+	-- Only react to our dropper blocks
+	if hit.Name == "Drop" then
+		local cashValue = hit:FindFirstChild("CashValue")
+		if cashValue then
+			-- Give the cash to every player in the game
+			for _, player in ipairs(game.Players:GetPlayers()) do
+				local stats = player:FindFirstChild("leaderstats")
+				if stats then
+					stats.Cash.Value = stats.Cash.Value + cashValue.Value
+				end
+			end
+			hit:Destroy() -- remove the block after collecting
+		end
+	end
+end)
+```
+
+---
+
+### Script 4 — The Buy Button
+**Where to put it:** inside your **BuyButton** part
+
+```lua
+local button = script.Parent
+local canBuy = true
+
+button.Touched:Connect(function(hit)
+	local player = game.Players:GetPlayerFromCharacter(hit.Parent)
+
+	if player and canBuy then
+		canBuy = false
+
+		local stats = player:FindFirstChild("leaderstats")
+		if stats and stats.Cash.Value >= 50 then
+			-- Take 50 cash
+			stats.Cash.Value = stats.Cash.Value - 50
+
+			-- Make the Dropper drop TWICE as fast!
+			local dropper = workspace:FindFirstChild("Dropper")
+			if dropper then
+				dropper:SetAttribute("DropSpeed", 1)
+			end
+
+			button.BrickColor = BrickColor.new("Bright green") -- turn green = bought!
+		end
+
+		task.wait(1) -- small pause so it doesn't buy a hundred times at once
+		canBuy = true
+	end
+end)
+```
+
+---
+
+## ▶️ PART 3: Test it!
+
+1. Press **Play** (or **Run** if your computer is slow)
+2. Watch the green blocks drop and land on your Collector
+3. Your **Cash** in the top-right should go UP! 💰
+4. Once you have 50 cash, walk onto the **Buy Button** — your Dropper speeds up!
+
+---
+
+## 🎉 You did it!
+
+You just made a real working Tycoon from scratch. That's seriously cool — most
+kids never get this far!
+
+## 🚀 Want to make it even better later?
+Here are fun ideas to try (just ask me and I'll write the code!):
+- Add MORE droppers
+- Make blocks worth more cash
+- Add a "rebirth" button to start over with bonuses
+- Give each player their OWN tycoon area
+- Add cool colors, sounds, and effects
+
+Have fun, and come back anytime you want to add something new! 😄
